@@ -989,8 +989,7 @@ minetest.register_on_generated(function(minp, maxp)
 	if maxp.y > 0 then
 		return
 	end
-	local stone = minetest.find_nodes_in_area_under_air(minp, maxp,
-		{"default:stone", "default:desert_stone"})
+	local stone = minetest.find_nodes_in_area_under_air(minp, maxp, {"group:stone"})
 	for n = 1, #stone do
 		if math.random(1, frequency) == 1 then
 			local pos = {x = stone[n].x, y = stone[n].y + 1, z = stone[n].z }
@@ -1006,3 +1005,19 @@ minetest.register_on_generated(function(minp, maxp)
 		end
 	end
 end)
+
+minetest.register_lbm({
+	label = "remove floating cave flowers",
+	name = "moreplants:floating_flower_cleanup",
+	nodenames = {"moreplants:firefung", "moreplants:bluemush", "moreplants:caveflower"},
+	run_at_every_load = true,
+	action = function(pos, node)
+		local pos_below = vector.add(pos, vector.new(0, -1, 0))
+		local node_below = minetest.get_node(pos_below)
+		local def = minetest.registered_nodes[node_below.name] or {}
+		local groups = def.groups or {}
+		if not groups.stone then
+			minetest.remove_node(pos)
+		end
+	end,
+})
